@@ -1,106 +1,142 @@
+const fs = require("fs");
 class ProductManager {
-  products;
-
-  constructor() {
-    this.products = [];
+  constructor(file) {
+    this.file = file;
   }
-
-  addProduct(title, description, price, thumbnail, code, stock) {
-    if (this.validateCode(code)) {
-      if (title && description && price && thumbnail && code && stock) {
-        let product = {
-          id: this.products.length + 1,
-          title,
-          description,
-          price,
-          thumbnail,
-          code,
-          stock,
-        };
-
-        this.products.push(product);
-        console.log("Producto agregado!");
-      } else {
-        console.log("ERROR! Completar todos los campos");
+  async incrementableId() {
+    let idMax = 0;
+    const dataParse = await this.getProducts();
+    dataParse.forEach((product) => {
+      if (product.id > idMax) {
+        idMax = product.id;
       }
-    } else {
-      console.log("ERROR! El codigo ya corresponde a un producto.");
+    });
+    return idMax + 1;
+  }
+  async addProduct(product) {
+    try {
+      const dataParse = await this.getProducts();
+      dataParse.push({ ...product, id: await this.incrementableId() });
+      await fs.promises.writeFile(
+        this.file,
+        JSON.stringify(dataParse, null, 2)
+      );
+    } catch {
+      await fs.promises.writeFile(
+        this.file,
+        JSON.stringify([{ ...product, id: 1 }])
+      );
     }
   }
-
-  validateCode(cod) {
-    let valid = true;
-    if (this.products.find((elem) => elem.code == cod)) {
-      valid = false;
-    }
-    return valid;
-  }
-
-  getProductById(id) {
-    let elem = this.products.find((el) => el.id == id);
-    if (elem) {
-      console.log(elem);
-    } else {
-      console.log("Not Found");
+  async getProducts() {
+    try {
+      const data = await fs.promises.readFile(this.file, "utf-8");
+      return JSON.parse(data);
+    } catch (err) {
+      throw new Error(err);
     }
   }
-
-  getProducts() {
-    return this.products;
+  async getProductById(id) {
+    try {
+      const dataParse = await this.getProducts();
+      return dataParse.find((item) => item.id === id) || null;
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+  async updateProduct(id, product) {
+    try {
+      const dataParse = await this.getProducts();
+      const position = dataParse.findIndex((productId) => productId.id === id);
+      console.log(position);
+      product.id = id;
+      dataParse.splice(position, 1, product);
+      await fs.promises.writeFile(
+        this.file,
+        JSON.stringify(dataParse, null, 2)
+      );
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+  async deleteById(id) {
+    try {
+      const dataParse = await this.getProducts();
+      const filterData =
+        dataParse.filter((product) => product.id !== id) || null;
+      await fs.promises.writeFile(
+        this.file,
+        JSON.stringify(filterData, null, 2)
+      );
+    } catch (err) {
+      throw new Error(err);
+    }
+  }
+  async deleteAll() {
+    try {
+      await fs.promises.writeFile(this.file, "[]");
+    } catch (err) {
+      throw new Error(err);
+    }
   }
 }
+const product1 = {
+  title: "PC Gamer",
+  description: "pc muy potente ideal para jugar",
+  price: 100000,
+  thumbnail: "www.pcgamer.com",
+  code: 658,
+  stock: 10,
+};
+const product2 = {
+  title: "Teclado",
+  description: "Teclado estandar para uso domestico",
+  price: 5000,
+  thumbnail: "www.teclado.com",
+  code: 689,
+  stock: 20,
+};
+const product3 = {
+  title: "Mouse",
+  description: "mouse versatil ideal para oficina",
+  price: 3500,
+  thumbnail: "www.mouse.com",
+  code: 788,
+  stock: 40,
+};
+const productRemplazo = {
+  title: "Teclado Gamer",
+  description: "Teclado mecanico gamer ideal para jugar juegos",
+  price: 9000,
+  thumbnail: "www.tecladogamer.com",
+  code: 589,
+  stock: 15,
+};
+const run = async () => {
+  try {
+    const products = new ProductManager("products.json");
+    await products.addProduct(product1);
+    await products.addProduct(product2);
+    await products.addProduct(product3);
 
-//PROBANDO EL CODIGO
-
-let productosUno = new ProductManager();
-
-//COMPRUEBO QUE EL ARRAY INICIE VACIO
-console.log(productosUno.getProducts());
-
-//CARGO VARIOS PRODUCTOS DE PRUEBA
-productosUno.addProduct(
-  "PC gamer",
-  "pc muy potente ideal para jugar",
-  100000,
-  "www.pcgamer.com",
-  658,
-  10
-);
-productosUno.addProduct(
-  "Teclado",
-  "teclado estandar uso domestico",
-  5000,
-  "www.teclado.com",
-  689,
-  20
-);
-productosUno.addProduct(
-  "Mouse",
-  "mouse versatil ideal para oficina",
-  3500,
-  "www.mouse.com",
-  788,
-  40
-);
-
-//CARGO UN PRODUCTO SIN UNA PROPIEDAD PARA PROBAR LA VALIDACION DE PROPIEDADES
-
-productosUno.addProduct("Mouse", 3500, "www.mouse.com", 788, 40);
-
-//CARGO UN PRODUCTO CON EL CODIGO REPETIDO PARA PROBAR LA VALIDACION DEL CODIGO
-
-productosUno.addProduct(
-  "PC domestico",
-  "pc muy potente ideal para jugar",
-  60000,
-  "www.pccasa.com",
-  658,
-  20
-);
-
-//PRUEBO EL METODO GetProducts
-console.log(productosUno.getProducts());
-
-//PRUEBO EL METODO GetProductById
-productosUno.getProductById(2);
-productosUno.getProductById(7);
+    console.log("Probando el metodo getProducts", await products.getProducts());
+    console.log(
+      "Probando el metodo getProductsbyId",
+      await products.getProductById(2)
+    );
+    await products.updateProduct(2, productRemplazo);
+    console.log(
+      "Comprobando que se haya reemplazado el producto",
+      await products.getProducts()
+    );
+    console.log(
+      "Probando el metodo getProductsbyId",
+      await products.getProductById(2)
+    );
+    // await products.deleteById(2)
+    // await products.deleteAll()
+  } catch {
+    console.log("Hubo un problema con la solicitud que realizo");
+  }
+};
+run();

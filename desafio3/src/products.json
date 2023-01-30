@@ -1,0 +1,47 @@
+[
+  {
+    "title": "PC Gamer",
+    "description": "pc muy potente ideal para jugar",
+    "price": 100000,
+    "thumbnail": "www.pcgamer.com",
+    "code": 658,
+    "stock": 10,
+    "id": 1
+  },
+  {
+    "title": "Teclado",
+    "description": "Teclado estandar para uso domestico",
+    "price": 5000,
+    "thumbnail": "www.teclado.com",
+    "code": 689,
+    "stock": 20,
+    "id": 2
+  },
+  {
+    "title": "Mouse",
+    "description": "mouse versatil ideal para oficina",
+    "price": 3500,
+    "thumbnail": "www.mouse.com",
+    "code": 788,
+    "stock": 40,
+    "id": 3
+  },
+  {
+    "title": "Teclado Gamer",
+    "description": "Teclado mecanico gamer ideal para jugar juegos",
+    "price": 9000,
+    "thumbnail": "www.tecladogamer.com",
+    "code": 589,
+    "stock": 15,
+    "id": 4
+  },
+  {
+    "title": "Cable usb",
+    "descripction": "cable de usb a micro usb",
+    "price": 1200,
+    "thumbnail": "www.cable.com",
+    "code": 987,
+    "stock": 30,
+    "id": 5
+  }
+]
